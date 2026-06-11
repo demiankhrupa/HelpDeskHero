@@ -1,0 +1,19 @@
+@page "/revoke-all"
+@attribute [Authorize]
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject HelpDeskHero.UI.Services.Api.AuthApiClient AuthApi
+
+<p>Wylogowywanie wszystkich urządzeń...</p>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Http.PostAsync("api/auth/revoke-all", null);
+
+        await AuthApi.LogoutAsync();
+
+        Nav.NavigateTo("/login", true);
+    }
+}

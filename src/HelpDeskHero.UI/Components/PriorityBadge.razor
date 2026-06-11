@@ -1,0 +1,14 @@
+<span class="@CssClass">@Priority</span>
+
+@code {
+    [Parameter]
+    public string Priority { get; set; } = string.Empty;
+
+    private string CssClass => Priority switch
+    {
+        "High" => "badge bg-danger",
+        "Medium" => "badge bg-warning text-dark",
+        "Low" => "badge bg-success",
+        _ => "badge bg-secondary"
+    };
+}

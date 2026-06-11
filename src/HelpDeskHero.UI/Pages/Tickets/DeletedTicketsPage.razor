@@ -1,0 +1,69 @@
+@page "/tickets/deleted"
+@attribute [Authorize]
+
+@using HelpDeskHero.Shared.Contracts.Tickets
+@inject HelpDeskHero.UI.Services.Api.TicketApiClient TicketApi
+
+<h3>Deleted Tickets</h3>
+
+@if (_tickets is null)
+{
+    <p>Ładowanie...</p>
+}
+else if (_tickets.Count == 0)
+{
+    <p>Brak usuniętych zgłoszeń.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Number</th>
+                <th>Title</th>
+                <th>Deleted</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ticket in _tickets)
+            {
+                <tr>
+                    <td>@ticket.Number</td>
+                    <td>@ticket.Title</td>
+                    <td>@ticket.UpdatedAtUtc</td>
+                    <td>
+                        <button class="btn btn-success btn-sm"
+                                @onclick="() => RestoreAsync(ticket.Id)">
+                            Restore
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<TicketDto>? _tickets;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _tickets = await TicketApi.GetDeletedAsync();
+    }
+
+    private async Task RestoreAsync(int id)
+    {
+        var response = await TicketApi.RestoreAsync(id);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadAsync();
+        }
+    }
+}

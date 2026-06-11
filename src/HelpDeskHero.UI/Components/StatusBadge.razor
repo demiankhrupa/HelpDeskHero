@@ -1,0 +1,14 @@
+<span class="@CssClass">@Status</span>
+
+@code {
+    [Parameter]
+    public string Status { get; set; } = string.Empty;
+
+    private string CssClass => Status switch
+    {
+        "New" => "badge bg-primary",
+        "InProgress" => "badge bg-warning text-dark",
+        "Closed" => "badge bg-success",
+        _ => "badge bg-secondary"
+    };
+}

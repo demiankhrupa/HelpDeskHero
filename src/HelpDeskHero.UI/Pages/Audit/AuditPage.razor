@@ -1,0 +1,84 @@
+@page "/audit"
+@attribute [Authorize]
+
+@using HelpDeskHero.Shared.Contracts.Audit
+@inject HelpDeskHero.UI.Services.Api.AuditApiClient AuditApi
+
+<h3>Audit Log</h3>
+
+<div class="row g-2 mb-3">
+    <div class="col-md-3">
+        <InputText class="form-control"
+                   @bind-Value="_action"
+                   placeholder="Action" />
+    </div>
+
+    <div class="col-md-3">
+        <InputText class="form-control"
+                   @bind-Value="_entityName"
+                   placeholder="EntityName" />
+    </div>
+
+    <div class="col-md-3">
+        <InputText class="form-control"
+                   @bind-Value="_performedBy"
+                   placeholder="PerformedBy" />
+    </div>
+
+    <div class="col-md-3">
+        <button class="btn btn-primary w-100"
+                @onclick="LoadAsync">
+            Filtruj
+        </button>
+    </div>
+</div>
+
+@if (_items is null)
+{
+    <p>Ładowanie...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Action</th>
+                <th>Entity</th>
+                <th>User</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in _items)
+            {
+                <tr>
+                    <td>@item.CreatedAtUtc.ToLocalTime()</td>
+                    <td>@item.Action</td>
+                    <td>@item.EntityName</td>
+                    <td>@item.PerformedBy</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<AuditLogListItemDto>? _items;
+
+    private string? _action;
+    private string? _entityName;
+    private string? _performedBy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _items = await AuditApi.GetAsync(
+            _action,
+            _entityName,
+            _performedBy);
+    }
+}
