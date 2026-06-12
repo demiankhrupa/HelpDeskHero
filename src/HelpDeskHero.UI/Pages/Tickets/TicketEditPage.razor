@@ -2,7 +2,7 @@
 @attribute [Authorize(Roles = "Admin,Agent")]
 
 @using HelpDeskHero.Shared.Contracts.Tickets
-@inject HelpDeskHero.UI.Services.Api.TicketApiClient TicketApi
+@inject HelpDeskHero.UI.Services.Api.ITicketApiClient TicketApi
 @inject NavigationManager Nav
 
 <h3>Edycja zgłoszenia</h3>

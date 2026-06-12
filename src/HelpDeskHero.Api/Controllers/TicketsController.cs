@@ -6,6 +6,8 @@ using HelpDeskHero.Shared.Contracts.Tickets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
+using HelpDeskHero.Api.BackgroundJobs.Contracts;
 
 namespace HelpDeskHero.Api.Controllers;
 
@@ -124,9 +126,12 @@ public sealed class TicketsController : ControllerBase
         };
 
         _db.Tickets.Add(entity);
-        await _db.SaveChangesAsync(ct);
+await _db.SaveChangesAsync(ct);
 
-        await _audit.WriteAsync("Create", "Ticket", entity.Id.ToString(), new { entity.Number, entity.Title }, ct);
+BackgroundJob.Enqueue<INotificationJob>(job =>
+    job.SendTicketCreatedNotificationsAsync(entity.Id, default));
+
+await _audit.WriteAsync("Create", "Ticket", entity.Id.ToString(), new { entity.Number, entity.Title }, ct);
 
         var result = new TicketDto
         {

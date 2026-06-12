@@ -1,7 +1,8 @@
 @page "/tickets/{Id:int}"
 @attribute [Authorize]
 @using HelpDeskHero.Shared.Contracts.Tickets
-@inject HelpDeskHero.UI.Services.Api.TicketApiClient TicketApi
+@using HelpDeskHero.UI.Components.Tickets
+@inject HelpDeskHero.UI.Services.Api.ITicketApiClient TicketApi
 @inject NavigationManager Nav
 
 <h3>Szczegoly zgloszenia</h3>
@@ -27,6 +28,18 @@ else
         @onclick="DeleteAsync">
     Usuń
 </button>
+
+<hr />
+
+<h4>Komentarze</h4>
+
+<TicketComments TicketId="@Id" />
+
+<hr />
+
+<h3>Załączniki</h3>
+
+<TicketAttachments TicketId="@Id" />
 }
 
 @code {

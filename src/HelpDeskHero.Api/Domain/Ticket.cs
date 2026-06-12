@@ -17,4 +17,6 @@ public sealed class Ticket
     public string? DeletedByUserId { get; set; }
 
     public byte[] RowVersion { get; set; } = [];
+    public ICollection<TicketComment> Comments { get; set; } = new List<TicketComment>();
+    public ICollection<TicketAttachment> Attachments { get; set; } = new List<TicketAttachment>();
 }

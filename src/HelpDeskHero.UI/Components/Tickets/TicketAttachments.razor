@@ -1,0 +1,62 @@
+@using HelpDeskHero.Shared.Contracts.Tickets
+@using HelpDeskHero.UI.Services.Api
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject TicketAttachmentApiClient AttachmentApi
+
+@if (_loading)
+{
+    <p>Ładowanie załączników...</p>
+}
+else if (_attachments.Count == 0)
+{
+    <p>Brak załączników.</p>
+}
+else
+{
+    <ul class="list-group mb-3">
+        @foreach (var item in _attachments)
+        {
+            <li class="list-group-item">
+                <strong>@item.OriginalFileName</strong>
+                <br />
+                <small>@item.SizeBytes bytes</small>
+            </li>
+        }
+    </ul>
+}
+
+<InputFile OnChange="HandleFileSelected" />
+
+@code {
+    [Parameter] public int TicketId { get; set; }
+
+    private bool _loading = true;
+    private List<TicketAttachmentDto> _attachments = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+
+        _attachments = (await AttachmentApi.GetAllAsync(TicketId)).ToList();
+
+        _loading = false;
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file is null)
+            return;
+
+        await AttachmentApi.UploadAsync(TicketId, file);
+
+        await LoadAsync();
+    }
+}

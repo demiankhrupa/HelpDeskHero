@@ -8,6 +8,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using HelpDeskHero.Api.Infrastructure.Security;
+using Hangfire;
+using Hangfire.SqlServer;
+using HelpDeskHero.Api.BackgroundJobs;
+using HelpDeskHero.Api.BackgroundJobs.Contracts;
+using HelpDeskHero.Api.Infrastructure.Notifications;
+using HelpDeskHero.Api.Infrastructure.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +28,21 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+builder.Services.AddHangfire(config =>
+{
+    config.UseSimpleAssemblyNameTypeSerializer()
+          .UseRecommendedSerializerSettings()
+          .UseSqlServerStorage(
+              builder.Configuration.GetConnectionString("DefaultConnection"),
+              new SqlServerStorageOptions
+              {
+                  PrepareSchemaIfNecessary = true
+              });
+});
+
+builder.Services.AddHangfireServer();
+builder.Services.AddScoped<INotificationJob, NotificationJob>();
+builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -80,10 +101,21 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient<WebhookNotificationSender>();
+
+builder.Services.AddScoped<INotificationSender, EmailNotificationSender>();
+builder.Services.AddScoped<INotificationSender, WebhookNotificationSender>();
+
+builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
 
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseHangfireDashboard("/hangfire");
+RecurringJob.AddOrUpdate<INotificationJob>(
+    "daily-summary",
+    job => job.SendDailySummaryAsync(default),
+    "0 7 * * *");
 
 if (app.Environment.IsDevelopment())
 {
