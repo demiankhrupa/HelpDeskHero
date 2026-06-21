@@ -1,21 +1,25 @@
 @page "/tickets"
 @attribute [Authorize]
+@implements IAsyncDisposable
 
 @using HelpDeskHero.Shared.Contracts.Common
 @using HelpDeskHero.Shared.Contracts.Tickets
 @using HelpDeskHero.UI.Components
 @inject HelpDeskHero.UI.Services.Api.ITicketApiClient TicketApi
 @inject NavigationManager Nav
+@inject HelpDeskHero.UI.Services.Realtime.TicketsRealtimeClient RealtimeClient
+@inject HelpDeskHero.UI.Services.Auth.TokenStore TokenStore
 
-<h3>Zgłoszenia</h3>
+<h3>Tickets</h3>
+<div class="page-card">
 
 <div class="row g-2 mb-3">
     <div class="col-md-4">
-        <InputText class="form-control" @bind-Value="_query.Search" placeholder="Szukaj..." />
+        <InputText class="form-control" @bind-Value="_query.Search" placeholder="Search..." />
     </div>
     <div class="col-md-2">
         <InputSelect class="form-select" @bind-Value="_query.Status">
-            <option value="">Wszystkie statusy</option>
+            <option value="">All statuses</option>
             <option value="New">New</option>
             <option value="InProgress">InProgress</option>
             <option value="Closed">Closed</option>
@@ -23,14 +27,14 @@
     </div>
     <div class="col-md-2">
         <InputSelect class="form-select" @bind-Value="_query.Priority">
-            <option value="">Wszystkie priorytety</option>
+            <option value="">All priorities</option>
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
             <option value="High">High</option>
         </InputSelect>
     </div>
     <div class="col-md-2">
-        <button class="btn btn-primary w-100" @onclick="ReloadAsync">Filtruj</button>
+        <button class="btn btn-primary w-100" @onclick="ReloadAsync">Filter</button>
     </div>
     <div class="col-md-2">
     <button class="btn btn-outline-secondary" @onclick="ExportCsv">Export CSV</button>
@@ -39,36 +43,88 @@
 
 @if (_result is null)
 {
-    <p>Ładowanie...</p>
+    <p>Loading...</p>
 }
 else
 {
-    <p>Łącznie: @_result.TotalCount</p>
+    <p>Total: @_result.TotalCount</p>
 
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Nr</th>
-                <th>Tytuł</th>
-                <th>Status</th>
-                <th>Priorytet</th>
-                <th>Utworzono</th>
+                <th>Number</th>
+<th>Title</th>
+<th>Status</th>
+<th>Priority</th>
+<th>Assigned</th>
+<th>Due Resolve</th>
+<th>Escalation</th>
+<th>SLA</th>
+<th>Created</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in _result.Items)
             {
                 <tr>
-                    <td>@item.Number</td>
-                    <td><a href="@($"/tickets/{item.Id}")">@item.Title</a></td>
-                    <td>
+ <td>@item.Number</td>
+
+<td>
+    <a href="@($"/tickets/{item.Id}")">
+        @item.Title
+    </a>
+</td>
+
+<td>
     <StatusBadge Status="@item.Status" />
 </td>
 
 <td>
     <PriorityBadge Priority="@item.Priority" />
 </td>
-                    <td>@item.CreatedAtUtc.ToLocalTime()</td>
+
+<td>
+    @(item.AssignedToUserId ?? "-")
+</td>
+
+<td>
+    @(item.DueResolveAtUtc?.ToLocalTime().ToString("g") ?? "-")
+</td>
+
+<td>
+@if (item.EscalationLevel > 0)
+{
+    <span class="badge bg-warning">
+        @item.EscalationLevel
+    </span>
+}
+else
+{
+    <span class="badge bg-success">
+        0
+    </span>
+}
+</td>
+
+<td>
+@if (item.DueResolveAtUtc is not null &&
+     item.DueResolveAtUtc < DateTime.UtcNow)
+{
+    <span class="badge bg-danger">
+        SLA breached
+    </span>
+}
+else
+{
+    <span class="badge bg-success">
+        On time
+    </span>
+}
+</td>
+
+<td>
+    @item.CreatedAtUtc.ToLocalTime()
+</td>
                 </tr>
             }
         </tbody>
@@ -80,19 +136,45 @@ else
         <button class="btn btn-outline-secondary"
                 disabled="@((_query.PageNumber * _query.PageSize) >= _result.TotalCount)"
                 @onclick="NextAsync">
-            Następna
+            Next
         </button>
     </div>
 }
-
+</div>
 @code {
     private TicketQueryDto _query = new();
     private PagedResultDto<TicketDto>? _result;
 
     protected override async Task OnInitializedAsync()
+{
+    await ReloadAsync();
+
+    var token = await TokenStore.GetAccessTokenAsync();
+
+Console.WriteLine($"TOKEN LENGTH = {token?.Length}");
+Console.WriteLine($"TOKEN = {token}");
+
+    if (!string.IsNullOrWhiteSpace(token))
     {
-        await ReloadAsync();
+        RealtimeClient.OnTicketChanged += HandleTicketChangedAsync;
+
+        try
+        {
+            await RealtimeClient.StartAsync(token);
+        }
+        catch (Exception ex)
+{
+    System.Console.WriteLine($"SignalR ERROR: {ex.Message}");
+}
     }
+}
+private async Task HandleTicketChangedAsync(
+    TicketLiveUpdateDto dto)
+{
+    await ReloadAsync();
+
+    await InvokeAsync(StateHasChanged);
+}
 
     private async Task ReloadAsync()
     {
@@ -113,13 +195,19 @@ else
         _query.PageNumber++;
         await ReloadAsync();
     }
-    private void ExportCsv()
+private void ExportCsv()
 {
     var url =
-        $"api/tickets/export" +
+        $"https://localhost:5001/api/tickets/export" +
         $"?status={Uri.EscapeDataString(_query.Status ?? "")}" +
         $"&priority={Uri.EscapeDataString(_query.Priority ?? "")}";
 
     Nav.NavigateTo(url, forceLoad: true);
+}
+public async ValueTask DisposeAsync()
+{
+    RealtimeClient.OnTicketChanged -= HandleTicketChangedAsync;
+
+    await RealtimeClient.DisposeAsync();
 }
 }

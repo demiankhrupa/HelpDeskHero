@@ -3,19 +3,45 @@
 @inject HelpDeskHero.UI.Services.Api.DashboardApiClient DashboardApi
 
 <h3>Dashboard</h3>
+<div class="page-card">
 
 @if (_model is null)
 {
-    <p>Ładowanie...</p>
+    <p>Loading...</p>
 }
 else
 {
-    <div class="row g-3 mb-4">
-        <div class="col-md-3"><div class="card p-3">Total: @_model.TotalTickets</div></div>
-        <div class="col-md-3"><div class="card p-3">Open: @_model.OpenTickets</div></div>
-        <div class="col-md-3"><div class="card p-3">Closed: @_model.ClosedTickets</div></div>
-        <div class="col-md-3"><div class="card p-3">Deleted: @_model.DeletedTickets</div></div>
+    <div class="row g-4 mb-4">
+
+    <div class="col-md-3">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted">Total Tickets</h6>
+            <h2>@_model.TotalTickets</h2>
+        </div>
     </div>
+
+    <div class="col-md-3">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted">Open</h6>
+            <h2>@_model.OpenTickets</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted">Closed</h6>
+            <h2>@_model.ClosedTickets</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted">Deleted</h6>
+            <h2>@_model.DeletedTickets</h2>
+        </div>
+    </div>
+
+</div>
 
     <h5>Recent audit</h5>
     <table class="table">
@@ -40,7 +66,7 @@ else
         </tbody>
     </table>
 }
-
+</div>
 @code {
     private DashboardSummaryDto? _model;
 

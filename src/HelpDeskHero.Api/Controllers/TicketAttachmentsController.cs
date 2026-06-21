@@ -85,7 +85,7 @@ public sealed class TicketAttachmentsController : ControllerBase
             UploadedByUserId = entity.UploadedByUserId
         });
     }
-
+    [AllowAnonymous]
     [HttpGet("{attachmentId:int}/download")]
     public async Task<IActionResult> Download(int ticketId, int attachmentId, CancellationToken ct)
     {

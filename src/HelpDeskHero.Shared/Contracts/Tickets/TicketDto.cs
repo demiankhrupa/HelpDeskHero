@@ -10,6 +10,12 @@ public sealed class TicketDto
     public string Priority { get; set; } = "Medium";
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? UpdatedAtUtc { get; set; }
+    public string? AssignedToUserId { get; set; }
 
+    public DateTime? DueFirstResponseAtUtc { get; set; }
+
+    public DateTime? DueResolveAtUtc { get; set; }
+
+    public int EscalationLevel { get; set; }
     public string RowVersionBase64 { get; set; } = string.Empty;
 }

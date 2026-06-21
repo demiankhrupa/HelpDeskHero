@@ -1,6 +1,8 @@
 using HelpDeskHero.Api.Domain;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using HelpDeskHero.Api.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace HelpDeskHero.Api.Infrastructure.Services;
 
@@ -13,7 +15,7 @@ public static class SeedData
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        string[] roles = ["Admin", "Agent", "User"];
+        string[] roles = ["Admin", "Manager", "Agent", "User"];
 
         foreach (var role in roles)
         {
@@ -64,5 +66,37 @@ public static class SeedData
                 await userManager.AddToRoleAsync(agent, "Agent");
             }
         }
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+if (!db.TicketSlaPolicies.Any())
+{
+    db.TicketSlaPolicies.AddRange(
+        new TicketSlaPolicy
+        {
+            Name = "Low SLA",
+            Priority = "Low",
+            FirstResponseMinutes = 240,
+            ResolveMinutes = 2880,
+            IsActive = true
+        },
+        new TicketSlaPolicy
+        {
+            Name = "Medium SLA",
+            Priority = "Medium",
+            FirstResponseMinutes = 60,
+            ResolveMinutes = 480,
+            IsActive = true
+        },
+        new TicketSlaPolicy
+        {
+            Name = "High SLA",
+            Priority = "High",
+            FirstResponseMinutes = 15,
+            ResolveMinutes = 120,
+            IsActive = true
+        });
+
+    await db.SaveChangesAsync();
+}
     }
 }

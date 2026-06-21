@@ -1,47 +1,63 @@
 ﻿<AuthorizeView Context="auth">
     <Authorized>
+<div class="text-center py-4">
+    <h3 class="text-white fw-bold mb-1">
+        🛠 HelpDeskHero
+    </h3>
+
+    <small class="text-light">
+        IT Service Desk
+    </small>
+</div>
 
         <div class="nav-item px-3 mb-2">
             <NavLink class="nav-link" href="tickets">
-                Tickets
+                📋 Tickets
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="dashboard">
-                Dashboard
+                📊 Dashboard
             </NavLink>
         </div>
 
         <div class="nav-item px-3 mb-2">
             <NavLink class="nav-link" href="tickets/create">
-                Nowe zgłoszenie
+                ➕ Create Ticket
             </NavLink>
         </div>
 
         <div class="nav-item px-3 mb-2">
             <NavLink class="nav-link" href="tickets/deleted">
-                Deleted Tickets
+                🗑 Deleted Tickets
             </NavLink>
         </div>
 
         <div class="nav-item px-3 mb-4">
             <NavLink class="nav-link" href="audit">
-                Audit Log
+                📜 Audit Log
             </NavLink>
         </div>
+        <div class="nav-item px-3">
+    <a class="nav-link"
+       href="https://localhost:5001/hangfire"
+       target="_blank">
+        ⚙️ Background Jobs
+    </a>
+</div>
 
         <hr class="text-light" />
 
         <div class="nav-item px-3 mt-4">
             <NavLink class="nav-link text-warning" href="revoke-all">
-                Wyloguj wszystkie urządzenia
+                🔒 Sign Out All Devices
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link text-danger" href="logout">
-                Logout
+                🚪 Logout
             </NavLink>
         </div>
 

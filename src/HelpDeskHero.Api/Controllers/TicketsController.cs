@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Hangfire;
 using HelpDeskHero.Api.BackgroundJobs.Contracts;
+using HelpDeskHero.Api.Application.Interfaces;
 
 namespace HelpDeskHero.Api.Controllers;
 
@@ -18,12 +19,23 @@ public sealed class TicketsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly AuditService _audit;
+    private readonly ISlaCalculator _slaCalculator;
+    private readonly ITicketAssignmentService _ticketAssignmentService;
+    private readonly IOutboxWriter _outboxWriter;
 
-    public TicketsController(AppDbContext db, AuditService audit)
-    {
-        _db = db;
-        _audit = audit;
-    }
+    public TicketsController(
+    AppDbContext db,
+    AuditService audit,
+    ISlaCalculator slaCalculator,
+    ITicketAssignmentService ticketAssignmentService,
+    IOutboxWriter outboxWriter)
+{
+    _db = db;
+    _audit = audit;
+    _slaCalculator = slaCalculator;
+    _ticketAssignmentService = ticketAssignmentService;
+    _outboxWriter = outboxWriter;
+}
 
     [HttpGet]
     public async Task<ActionResult<PagedResultDto<TicketDto>>> GetAll([FromQuery] TicketQueryDto query, CancellationToken ct)
@@ -63,17 +75,23 @@ public sealed class TicketsController : ControllerBase
             .Skip((query.PageNumber - 1) * query.PageSize)
             .Take(query.PageSize)
             .Select(x => new TicketDto
-            {
-                Id = x.Id,
-                Number = x.Number,
-                Title = x.Title,
-                Description = x.Description,
-                Status = x.Status,
-                Priority = x.Priority,
-                CreatedAtUtc = x.CreatedAtUtc,
-                UpdatedAtUtc = x.UpdatedAtUtc,
-                RowVersionBase64 = Convert.ToBase64String(x.RowVersion)
-            })
+{
+    Id = x.Id,
+    Number = x.Number,
+    Title = x.Title,
+    Description = x.Description,
+    Status = x.Status,
+    Priority = x.Priority,
+    CreatedAtUtc = x.CreatedAtUtc,
+    UpdatedAtUtc = x.UpdatedAtUtc,
+
+    AssignedToUserId = x.AssignedToUserId,
+    DueFirstResponseAtUtc = x.DueFirstResponseAtUtc,
+    DueResolveAtUtc = x.DueResolveAtUtc,
+    EscalationLevel = x.EscalationLevel,
+
+    RowVersionBase64 = Convert.ToBase64String(x.RowVersion)
+})
             .ToListAsync(ct);
 
         return Ok(new PagedResultDto<TicketDto>
@@ -102,6 +120,10 @@ public sealed class TicketsController : ControllerBase
             Priority = entity.Priority,
             CreatedAtUtc = entity.CreatedAtUtc,
             UpdatedAtUtc = entity.UpdatedAtUtc,
+            AssignedToUserId = entity.AssignedToUserId,
+            DueFirstResponseAtUtc = entity.DueFirstResponseAtUtc,
+            DueResolveAtUtc = entity.DueResolveAtUtc,
+            EscalationLevel = entity.EscalationLevel,
             RowVersionBase64 = Convert.ToBase64String(entity.RowVersion)
         });
     }
@@ -126,7 +148,26 @@ public sealed class TicketsController : ControllerBase
         };
 
         _db.Tickets.Add(entity);
+        await _slaCalculator.ApplySlaAsync(entity, ct);
+
+await _ticketAssignmentService.AssignAsync(entity, ct);
 await _db.SaveChangesAsync(ct);
+await _outboxWriter.AddAsync(
+    "TicketChanged",
+    new TicketLiveUpdateDto
+    {
+        TicketId = entity.Id,
+        EventType = "Created",
+        Status = entity.Status,
+        Priority = entity.Priority,
+        AssignedToUserId = entity.AssignedToUserId,
+        EscalationLevel = entity.EscalationLevel,
+        ChangedAtUtc = DateTime.UtcNow
+    },
+    ct);
+
+await _db.SaveChangesAsync(ct);
+
 
 BackgroundJob.Enqueue<INotificationJob>(job =>
     job.SendTicketCreatedNotificationsAsync(entity.Id, default));
@@ -167,6 +208,21 @@ await _audit.WriteAsync("Create", "Ticket", entity.Id.ToString(), new { entity.N
         entity.UpdatedAtUtc = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(ct);
+        await _outboxWriter.AddAsync(
+    "TicketChanged",
+    new TicketLiveUpdateDto
+    {
+        TicketId = entity.Id,
+        EventType = "Updated",
+        Status = entity.Status,
+        Priority = entity.Priority,
+        AssignedToUserId = entity.AssignedToUserId,
+        EscalationLevel = entity.EscalationLevel,
+        ChangedAtUtc = DateTime.UtcNow
+    },
+    ct);
+
+await _db.SaveChangesAsync(ct);
 
         await _audit.WriteAsync("Update", "Ticket", entity.Id.ToString(), new { entity.Number, entity.Title }, ct);
 
@@ -192,6 +248,7 @@ await _audit.WriteAsync("Create", "Ticket", entity.Id.ToString(), new { entity.N
 
         return NoContent();
     }
+    [AllowAnonymous]
     [HttpGet("export")]
 [Authorize(Policy = "CanManageTickets")]
 public async Task<IActionResult> ExportCsv(
@@ -271,6 +328,10 @@ public async Task<ActionResult<List<TicketDto>>> GetDeleted(CancellationToken ct
             Priority = x.Priority,
             CreatedAtUtc = x.CreatedAtUtc,
             UpdatedAtUtc = x.UpdatedAtUtc,
+            AssignedToUserId = x.AssignedToUserId,
+DueFirstResponseAtUtc = x.DueFirstResponseAtUtc,
+DueResolveAtUtc = x.DueResolveAtUtc,
+EscalationLevel = x.EscalationLevel,
             RowVersionBase64 = Convert.ToBase64String(x.RowVersion)
         })
         .ToListAsync(ct);

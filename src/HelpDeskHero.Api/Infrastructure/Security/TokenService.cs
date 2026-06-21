@@ -39,7 +39,8 @@ public sealed class TokenService
     var credentials = new SigningCredentials(
         key,
         SecurityAlgorithms.HmacSha256);
-
+    Console.WriteLine($"JWT ISSUER = {_options.Issuer}");
+Console.WriteLine($"JWT AUDIENCE = {_options.Audience}");
     var jwt = new JwtSecurityToken(
         issuer: _options.Issuer,
         audience: _options.Audience,

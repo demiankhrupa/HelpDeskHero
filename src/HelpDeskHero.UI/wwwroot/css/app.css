@@ -113,3 +113,108 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+body {
+    background: #f3f4f6;
+}
+
+main {
+    padding: 20px;
+}
+
+.page-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
+
+.btn {
+    border-radius: 10px;
+}
+
+.btn-primary,
+.btn-success,
+.btn-danger,
+.btn-secondary {
+    font-weight: 600;
+}
+
+.table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table thead {
+    background: #f8fafc;
+}
+
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+}
+
+input,
+textarea,
+select {
+    box-shadow: none !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-weight: 700;
+}
+.card {
+    transition: all .2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+}
+
+.page-card {
+    max-width: 1400px;
+}
+
+h1 {
+    letter-spacing: -1px;
+}
+.table tbody tr:hover {
+    background: #f8fafc;
+    cursor: pointer;
+}
+.table tbody tr {
+    transition: .2s;
+}
+.login-card {
+    max-width: 500px;
+    margin: 80px auto;
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.1);
+}
+
+
+.card {
+    transition: .2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}

@@ -6,28 +6,29 @@
 @inject NavigationManager Navigation
 @inject HelpDeskHero.UI.Services.Api.ITicketApiClient TicketApi
 
-<PageTitle>Nowe zgloszenie</PageTitle>
+<PageTitle>Create Ticket</PageTitle>
 
-<h3>Nowe zgloszenie</h3>
+<h3>Create Ticket</h3>
+<div class="page-card">
 
 <EditForm Model="_model" OnValidSubmit="HandleSubmitAsync">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="mb-3">
-        <label>Tytul</label>
+        <label>Title</label>
         <InputText class="form-control" @bind-Value="_model.Title" />
         <ValidationMessage For="@(() => _model.Title)" />
     </div>
 
     <div class="mb-3">
-        <label>Opis</label>
+        <label>Description</label>
         <InputTextArea class="form-control" @bind-Value="_model.Description" />
         <ValidationMessage For="@(() => _model.Description)" />
     </div>
 
     <div class="mb-3">
-        <label>Priorytet</label>
+        <label>Priority</label>
         <InputSelect class="form-select" @bind-Value="_model.Priority">
             <option>Low</option>
             <option>Medium</option>
@@ -42,9 +43,9 @@
         <div class="alert alert-danger">@_error</div>
     }
 
-    <button class="btn btn-primary" type="submit" disabled="@_busy">Zapisz</button>
+    <button class="btn btn-primary" type="submit" disabled="@_busy">Save</button>
 </EditForm>
-
+</div>
 @code {
     private bool _busy;
     private string? _error;
@@ -60,7 +61,7 @@
             var result = await TicketApi.CreateAsync(_model);
             if (result is null)
             {
-                _error = "Nie udalo sie zapisac zgloszenia.";
+                _error = "Failed to save the ticket.";
                 return;
             }
 
@@ -68,7 +69,7 @@
         }
         catch
         {
-            _error = "Wystapil blad podczas zapisu.";
+            _error = "An error occurred while saving the ticket.";
         }
         finally
         {

@@ -2,31 +2,54 @@
 @inject NavigationManager Nav
 @inject HelpDeskHero.UI.Services.Api.AuthApiClient AuthApi
 
-<h3>Logowanie</h3>
+<h3>Logging In</h3>
 
 @if (!string.IsNullOrWhiteSpace(_error))
 {
     <div class="alert alert-danger">@_error</div>
 }
 
-<EditForm Model="_model" OnValidSubmit="HandleLoginAsync">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<div class="login-card">
 
-    <div class="mb-3">
-        <label>Login</label>
-        <InputText class="form-control" @bind-Value="_model.UserName" />
-    </div>
+    <h2 class="mb-3">Welcome Back</h2>
 
-    <div class="mb-3">
-        <label>Hasło</label>
-        <InputText class="form-control" type="password" @bind-Value="_model.Password" />
-    </div>
+    <p class="text-muted mb-4">
+        Sign in to continue to HelpDeskHero
+    </p>
 
-    <button class="btn btn-primary" disabled="@_busy">
-    Zaloguj
-</button>
-</EditForm>
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-danger">
+            @_error
+        </div>
+    }
+
+    <EditForm Model="_model" OnValidSubmit="HandleLoginAsync">
+
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Username</label>
+            <InputText class="form-control"
+                       @bind-Value="_model.UserName" />
+        </div>
+
+        <div class="mb-4">
+            <label>Password</label>
+            <InputText class="form-control"
+                       type="password"
+                       @bind-Value="_model.Password" />
+        </div>
+
+        <button class="btn btn-primary w-100"
+                disabled="@_busy">
+            Sign In
+        </button>
+
+    </EditForm>
+
+</div>
 
 @code {
     private HelpDeskHero.Shared.Contracts.Auth.LoginRequestDto _model = new()
@@ -48,7 +71,7 @@
 
         if (!ok)
         {
-            _error = "Nieprawidłowy login lub hasło.";
+            _error = "Invalid username or password.";
             return;
         }
 

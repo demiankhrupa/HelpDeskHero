@@ -5,7 +5,7 @@
 @inject HelpDeskHero.UI.Services.Api.ITicketApiClient TicketApi
 @inject NavigationManager Nav
 
-<h3>Edycja zgłoszenia</h3>
+<h3>Edit Ticket</h3>
 
 @if (!string.IsNullOrWhiteSpace(_error))
 {
@@ -14,7 +14,7 @@
 
 @if (_model is null)
 {
-    <p>Ładowanie...</p>
+    <p>Loading...</p>
 }
 else
 {
@@ -23,12 +23,12 @@ else
         <ValidationSummary />
 
         <div class="mb-3">
-            <label>Tytuł</label>
+            <label>Title</label>
             <InputText class="form-control" @bind-Value="_model.Title" />
         </div>
 
         <div class="mb-3">
-            <label>Opis</label>
+            <label>Description</label>
             <InputTextArea class="form-control" @bind-Value="_model.Description" />
         </div>
 
@@ -42,7 +42,7 @@ else
         </div>
 
         <div class="mb-3">
-            <label>Priorytet</label>
+            <label>Priority</label>
             <InputSelect class="form-select" @bind-Value="_model.Priority">
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -50,7 +50,7 @@ else
             </InputSelect>
         </div>
 
-        <button class="btn btn-primary">Zapisz</button>
+        <button class="btn btn-primary">Save</button>
     </EditForm>
 }
 
@@ -65,7 +65,7 @@ else
         var dto = await TicketApi.GetByIdAsync(Id);
         if (dto is null)
         {
-            _error = "Nie znaleziono zgłoszenia.";
+            _error = "Ticket not found.";
             return;
         }
 
@@ -96,10 +96,10 @@ else
 
         if ((int)response.StatusCode == 409)
         {
-            _error = "Konflikt zapisu: rekord został zmieniony przez innego użytkownika.";
+            _error = "Conflict: record has been modified by another user.";
             return;
         }
 
-        _error = "Nie udało się zapisać zmian.";
+        _error = "Failed to save changes.";
     }
 }

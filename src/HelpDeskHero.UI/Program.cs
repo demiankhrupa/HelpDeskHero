@@ -4,6 +4,7 @@ using HelpDeskHero.UI.Services.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using HelpDeskHero.UI.Services.Realtime;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -39,5 +40,6 @@ builder.Services.AddScoped<AuditApiClient>();
 builder.Services.AddScoped<TicketCommentApiClient>();
 builder.Services.AddScoped<DashboardApiClient>();
 builder.Services.AddScoped<TicketAttachmentApiClient>();
+builder.Services.AddScoped<TicketsRealtimeClient>();
 
 await builder.Build().RunAsync();

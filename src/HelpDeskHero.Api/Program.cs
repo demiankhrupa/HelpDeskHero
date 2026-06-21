@@ -14,6 +14,10 @@ using HelpDeskHero.Api.BackgroundJobs;
 using HelpDeskHero.Api.BackgroundJobs.Contracts;
 using HelpDeskHero.Api.Infrastructure.Notifications;
 using HelpDeskHero.Api.Infrastructure.Storage;
+using HelpDeskHero.Api.Hubs;
+using HelpDeskHero.Api.Application.Interfaces;
+using HelpDeskHero.Api.Application.Services;
+using HelpDeskHero.Api.Infrastructure.Background;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,16 +78,40 @@ var key = jwtSection["Key"]!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer = issuer,
+                ValidAudience = audience,
+
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(key))
+            };
+
+        options.Events = new JwtBearerEvents
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
-            ValidIssuer = issuer,
-            ValidAudience = audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-            ClockSkew = TimeSpan.FromSeconds(30)
+            OnMessageReceived = context =>
+            {
+                var accessToken =
+                    context.Request.Query["access_token"];
+
+                var path =
+                    context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/hubs/tickets"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -98,6 +126,7 @@ builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddScoped<AuditService>();
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
@@ -107,6 +136,12 @@ builder.Services.AddScoped<INotificationSender, EmailNotificationSender>();
 builder.Services.AddScoped<INotificationSender, WebhookNotificationSender>();
 
 builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
+builder.Services.AddScoped<ITicketLiveNotifier, SignalRTicketLiveNotifier>();
+builder.Services.AddScoped<ISlaCalculator, SlaCalculator>();
+builder.Services.AddScoped<ITicketAssignmentService, TicketAssignmentService>();
+builder.Services.AddScoped<IOutboxWriter, OutboxWriter>();
+builder.Services.AddHostedService<OutboxProcessorService>();
+builder.Services.AddScoped<ISlaMonitorService, SlaMonitorService>();
 
 var app = builder.Build();
 
@@ -130,6 +165,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<TicketsHub>("/hubs/tickets");
 
 await SeedData.InitializeAsync(app.Services);
 

@@ -2,46 +2,101 @@
 @attribute [Authorize]
 @using HelpDeskHero.Shared.Contracts.Tickets
 @using HelpDeskHero.UI.Components.Tickets
+@using HelpDeskHero.UI.Components
 @inject HelpDeskHero.UI.Services.Api.ITicketApiClient TicketApi
 @inject NavigationManager Nav
 
-<h3>Szczegoly zgloszenia</h3>
+<div class="page-card">
 
 @if (_ticket is null)
 {
-    <p>Ladowanie...</p>
+    <p>Loading...</p>
 }
 else
 {
-    <p><strong>Numer:</strong> @_ticket.Number</p>
-    <p><strong>Tytul:</strong> @_ticket.Title</p>
-    <p><strong>Status:</strong> @_ticket.Status</p>
-    <p><strong>Priorytet:</strong> @_ticket.Priority</p>
-    <p><strong>Opis:</strong> @_ticket.Description</p>
+<div class="card p-4 mb-4">
+
+    <div class="d-flex justify-content-between align-items-center">
+
+        <div>
+            <h2>@_ticket.Title</h2>
+
+            <div class="text-muted">
+                @_ticket.Number
+            </div>
+        </div>
+
+        <div>
+            <StatusBadge Status="@_ticket.Status" />
+        </div>
+
+    </div>
+
+    <hr />
+
+    <div class="row">
+
+        <div class="col-md-3 mb-3">
+            <strong>Priority</strong>
+            <br />
+            <PriorityBadge Priority="@_ticket.Priority" />
+        </div>
+
+      <div class="col-md-3 mb-3">
+    <strong>Assigned To</strong>
+    <br />
+    @(_ticket.AssignedToUserId ?? "Unassigned")
+</div>
+
+        <div class="col-md-3 mb-3">
+            <strong>Escalation</strong>
+            <br />
+            @_ticket.EscalationLevel
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <strong>Status</strong>
+            <br />
+            @_ticket.Status
+        </div>
+
+    </div>
+
+    <hr />
+
+    <div>
+        <strong>Description</strong>
+
+        <p class="mt-2">
+            @_ticket.Description
+        </p>
+    </div>
+
+</div>
 
     <button class="btn btn-primary me-2"
         @onclick='() => Nav.NavigateTo($"/tickets/edit/{Id}")'>
-    Edytuj
+    Edit
 </button>
 
 <button class="btn btn-danger"
         @onclick="DeleteAsync">
-    Usuń
+    Delete
 </button>
 
 <hr />
 
-<h4>Komentarze</h4>
+<h4>Comments</h4>
 
 <TicketComments TicketId="@Id" />
 
 <hr />
 
-<h3>Załączniki</h3>
+<h3>Attachments</h3>
 
 <TicketAttachments TicketId="@Id" />
 }
-
+</div>
 @code {
     [Parameter] public int Id { get; set; }
 

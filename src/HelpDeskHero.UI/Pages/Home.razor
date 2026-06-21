@@ -1,7 +1,72 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>HelpDeskHero</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="page-card">
 
-Welcome to your new app.
+    <div class="mb-4">
+        <h1 class="fw-bold">
+            🛠 HelpDeskHero
+        </h1>
+
+        <p class="text-muted fs-5">
+            Internal Help Desk & Ticketing System
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="card h-100 p-4">
+
+                <h3>📋 Tickets</h3>
+
+                <p class="text-muted">
+                    Browse, filter and manage support tickets.
+                </p>
+
+                <a href="/tickets"
+                   class="btn btn-primary mt-auto">
+                    Open Tickets
+                </a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 p-4">
+
+                <h3>➕ Create Ticket</h3>
+
+                <p class="text-muted">
+                    Create a new issue or support request.
+                </p>
+
+                <a href="/tickets/create"
+                   class="btn btn-success mt-auto">
+                    Create Ticket
+                </a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 p-4">
+
+                <h3>📊 Dashboard</h3>
+
+                <p class="text-muted">
+                    View statistics, SLA and ticket activity.
+                </p>
+
+                <a href="/dashboard"
+                   class="btn btn-secondary mt-auto">
+                    Open Dashboard
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

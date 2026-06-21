@@ -16,6 +16,9 @@ public sealed class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<TicketComment> TicketComments => Set<TicketComment>();
     public DbSet<TicketAttachment> TicketAttachments => Set<TicketAttachment>();
     public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
+    public DbSet<TicketSlaPolicy> TicketSlaPolicies => Set<TicketSlaPolicy>();
+    public DbSet<TicketEscalation> TicketEscalations => Set<TicketEscalation>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -111,5 +114,65 @@ modelBuilder.Entity<UserNotification>(b =>
     b.Property(x => x.UserId)
         .HasMaxLength(450);
 });
+modelBuilder.Entity<TicketSlaPolicy>(b =>
+{
+    b.ToTable("TicketSlaPolicies");
+    b.HasKey(x => x.Id);
+
+    b.Property(x => x.Name)
+        .HasMaxLength(100)
+        .IsRequired();
+
+    b.Property(x => x.Priority)
+        .HasMaxLength(30)
+        .IsRequired();
+
+    b.Property(x => x.FirstResponseMinutes)
+        .IsRequired();
+
+    b.Property(x => x.ResolveMinutes)
+        .IsRequired();
+
+    b.Property(x => x.IsActive)
+        .IsRequired();
+});
+
+modelBuilder.Entity<TicketEscalation>(b =>
+{
+    b.ToTable("TicketEscalations");
+    b.HasKey(x => x.Id);
+
+    b.Property(x => x.Reason)
+        .HasMaxLength(500)
+        .IsRequired();
+
+    b.Property(x => x.TriggeredAtUtc)
+        .IsRequired();
+
+    b.HasOne(x => x.Ticket)
+        .WithMany()
+        .HasForeignKey(x => x.TicketId)
+        .OnDelete(DeleteBehavior.Cascade);
+});
+
+modelBuilder.Entity<OutboxMessage>(b =>
+{
+    b.ToTable("OutboxMessages");
+    b.HasKey(x => x.Id);
+
+    b.Property(x => x.Type)
+        .HasMaxLength(200)
+        .IsRequired();
+
+    b.Property(x => x.Payload)
+        .IsRequired();
+
+    b.Property(x => x.OccurredAtUtc)
+        .IsRequired();
+
+    b.Property(x => x.RetryCount)
+        .IsRequired();
+});
     }
+
 }

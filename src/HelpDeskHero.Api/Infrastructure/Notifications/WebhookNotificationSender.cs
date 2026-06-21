@@ -13,9 +13,10 @@ public sealed class WebhookNotificationSender : INotificationSender
 
     public NotificationChannel Channel => NotificationChannel.Webhook;
 
-    public async Task SendAsync(NotificationMessage message, CancellationToken ct = default)
-    {
-        var payload = new { text = $"{message.Subject}: {message.Body}" };
-        await _http.PostAsJsonAsync("https://example.invalid/webhook", payload, ct);
-    }
+public async Task SendAsync(
+    NotificationMessage message,
+    CancellationToken ct = default)
+{
+    await Task.CompletedTask;
+}
 }

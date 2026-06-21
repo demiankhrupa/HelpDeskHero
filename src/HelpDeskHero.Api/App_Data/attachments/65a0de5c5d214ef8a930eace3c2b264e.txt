@@ -1,0 +1,56 @@
+Zadanie 1a  (zadanie, w ktorym trzeba wykorzystac instrukcję z grupy DDL)
+Zapisać instrukcję SQL, która spowoduje dodanie nowej
+kolumny do wskazanej, istniejącej w bazie, tabeli. Być może
+trzeba będzie okreslić jakieś więzy integralności w czasie dodawania tej kolumny.
+
+Zadanie 1b (zadanie z użyciem instrukcji UPDATE)
+Zapisać instrukcję SQL, która spowoduje zapełnienie kolumny dodanej w zadaniu 1a danymi pochodzącymi ze wskazanej innej tabeli i jej kolumny. Obie tabele będa miały identyczne kolumny klucza podstawowego.
+
+Zadanie 2a
+Zapisać instrukcję SQL, której wykonanie utworzy
+perspektywę o nazwie PRODILE, o trzech kolumnach: Firma, 
+Adres i Ile, w której wierszach zapisane są nazwy firm producentów (kolumna: Firma), ich adresy (kolumna: Adres) i liczby dostarczanych przez nich towarów (kolumna: Ile).
+
+Zadanie 2b
+Zapisać instrukcję SELECT, która z użyciem, między innymi, perspektywy PRODILE zwróci trójki: nazwa firmy producenta, liczba dostarczanych przez niego towarów oraz nazwa firmy klienta, takie że klient znajduje się 
+ponad trzy razy dalej od naszej hurtowni niż producent. 
+
+Zadanie 3a
+Zapisać instrukcję SQL zwracającą ile razy towar o numerze 1 był kupowany przez klienta o numerze 2.
+Zastosować wyłącznie złączenie tabel; wystąpienie podzapytania niedopuszczalne.
+
+Zadanie 3b
+Zapisać instrukcję SQL zwracającą ile razy towar o numerze 1 był kupowany przez klienta o numerze 2.
+Zastosować wyłącznie podzapytanie; wystąpienie złączenia tabel niedopuszczalne.
+
+Zadanie 4
+Zapisać instrukcję SQL zwracającą nazwy firm producentów, których towary były kupowane któregoś dnia więcej niż trzy razy. 
+
+
+Zadanie 5.
+Zadanie, w którym mozna zastosowac fukcje analityczne, ale mozna też je rozwiązać z użyciem podzapytań.
+
+Zapisać instrukcję SQL zwracającą dla każdego producenta nazwę jego firmy, liczbę producentów znajdujących się w tej samej lub mniejszej odległości od naszej hurtowni oraz liczbę producentów
+o tym samym adresie co ten producent.
+
+
+Zadanie 6.
+Sformułuj treść zadania, którego rozwiązaniem jest poniższa instrukcja SQL:
+
+SELECT IDPojazdu,COUNT(*)
+FROM kursy
+GROUP BY IDPojazdu
+HAVING COUNT(*) = 
+   (SELECT AVG(liczk)
+    FROM (SELECT COUNT(*) AS liczk 
+          FROM kursy 
+          GROUP BY IDPojazdu) )
+
+Punktacja: 
+
+zadanie 1 (całość) - 7 punktów
+zadanie 2 (całość) - 8 punktów
+zadanie 3 (całość) - 4 punkty
+zadanie 4          - 4 punkty
+zadanie 5          - 4 punkty
+zadanie 6          - 3 punkty

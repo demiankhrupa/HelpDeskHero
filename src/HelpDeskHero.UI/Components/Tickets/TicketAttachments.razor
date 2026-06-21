@@ -4,29 +4,63 @@
 
 @inject TicketAttachmentApiClient AttachmentApi
 
-@if (_loading)
-{
-    <p>Ładowanie załączników...</p>
-}
-else if (_attachments.Count == 0)
-{
-    <p>Brak załączników.</p>
-}
-else
-{
-    <ul class="list-group mb-3">
-        @foreach (var item in _attachments)
-        {
-            <li class="list-group-item">
-                <strong>@item.OriginalFileName</strong>
-                <br />
-                <small>@item.SizeBytes bytes</small>
-            </li>
-        }
-    </ul>
-}
+<div class="card p-4 mt-3">
 
-<InputFile OnChange="HandleFileSelected" />
+    <h5 class="mb-3">
+        📎 Attachments
+    </h5>
+
+    @if (_loading)
+    {
+        <p>Loading attachments...</p>
+    }
+    else if (_attachments.Count == 0)
+    {
+        <div class="alert alert-light border">
+            No attachments uploaded yet.
+        </div>
+    }
+    else
+    {
+        <div class="list-group mb-4">
+
+            @foreach (var item in _attachments)
+            {
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <div class="fw-bold">
+                            📄 @item.OriginalFileName
+                        </div>
+
+                        <small class="text-muted">
+                            @(Math.Round(item.SizeBytes / 1024.0, 2)) KB
+                        </small>
+                    </div>
+
+                    <a class="btn btn-outline-primary btn-sm"
+                       href="@GetDownloadUrl(item.Id)"
+                       target="_blank">
+                        ⬇ Download
+                    </a>
+
+                </div>
+            }
+
+        </div>
+    }
+
+    <div class="border rounded p-3 bg-light">
+
+        <label class="fw-bold mb-2">
+            Upload attachment
+        </label>
+
+        <InputFile OnChange="HandleFileSelected" />
+
+    </div>
+
+</div>
 
 @code {
     [Parameter] public int TicketId { get; set; }
@@ -59,4 +93,9 @@ else
 
         await LoadAsync();
     }
+    private string GetDownloadUrl(int attachmentId)
+{
+    return
+        $"https://localhost:5001/api/tickets/{TicketId}/attachments/{attachmentId}/download";
+}
 }
