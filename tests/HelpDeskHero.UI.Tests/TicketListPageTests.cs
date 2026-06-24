@@ -5,6 +5,10 @@ using HelpDeskHero.Shared.Contracts.Tickets;
 using HelpDeskHero.UI.Pages.Tickets;
 using HelpDeskHero.UI.Services.Api;
 using Microsoft.Extensions.DependencyInjection;
+using HelpDeskHero.UI.Services.Auth;
+using HelpDeskHero.UI.Services.Realtime;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace HelpDeskHero.UI.Tests;
 
@@ -14,6 +18,14 @@ public sealed class TicketListPageTests : BunitContext
     public void TicketListPage_ShouldRenderTicketTitle()
     {
         Services.AddSingleton<ITicketApiClient>(new FakeTicketApiClient());
+        Services.AddSingleton<TokenStore>();
+        Services.AddSingleton<ITicketsRealtimeClient>(
+        new FakeRealtimeClient());
+
+        JSInterop.Setup<string?>(
+        "localStorage.getItem",
+        _ => true)
+        .SetResult(null);
 
         var cut = Render<TicketListPage>();
 
@@ -21,6 +33,7 @@ public sealed class TicketListPageTests : BunitContext
         {
             cut.Markup.Should().Contain("Test Ticket from bUnit");
         });
+        cut.Dispose();
     }
 
     private sealed class FakeTicketApiClient : ITicketApiClient
@@ -66,4 +79,20 @@ public sealed class TicketListPageTests : BunitContext
         public Task<HttpResponseMessage> RestoreAsync(int id, CancellationToken ct = default)
             => Task.FromResult(new HttpResponseMessage());
     }
+    private sealed class FakeRealtimeClient : ITicketsRealtimeClient
+{
+    public event Func<TicketLiveUpdateDto, Task>? OnTicketChanged;
+
+    public Task StartAsync(
+        string accessToken,
+        CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return ValueTask.CompletedTask;
+    }
+}
 }

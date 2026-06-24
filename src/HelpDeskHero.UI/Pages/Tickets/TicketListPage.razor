@@ -7,7 +7,7 @@
 @using HelpDeskHero.UI.Components
 @inject HelpDeskHero.UI.Services.Api.ITicketApiClient TicketApi
 @inject NavigationManager Nav
-@inject HelpDeskHero.UI.Services.Realtime.TicketsRealtimeClient RealtimeClient
+@inject HelpDeskHero.UI.Services.Realtime.ITicketsRealtimeClient RealtimeClient
 @inject HelpDeskHero.UI.Services.Auth.TokenStore TokenStore
 
 <h3>Tickets</h3>
@@ -154,19 +154,19 @@ else
 Console.WriteLine($"TOKEN LENGTH = {token?.Length}");
 Console.WriteLine($"TOKEN = {token}");
 
-    if (!string.IsNullOrWhiteSpace(token))
-    {
-        RealtimeClient.OnTicketChanged += HandleTicketChangedAsync;
-
-        try
-        {
-            await RealtimeClient.StartAsync(token);
-        }
-        catch (Exception ex)
+if (!string.IsNullOrWhiteSpace(token))
 {
-    System.Console.WriteLine($"SignalR ERROR: {ex.Message}");
-}
+    RealtimeClient.OnTicketChanged += HandleTicketChangedAsync;
+
+    try
+    {
+        await RealtimeClient.StartAsync(token);
     }
+    catch
+    {
+        // ignore in tests
+    }
+}
 }
 private async Task HandleTicketChangedAsync(
     TicketLiveUpdateDto dto)

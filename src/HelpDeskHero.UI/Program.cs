@@ -40,6 +40,6 @@ builder.Services.AddScoped<AuditApiClient>();
 builder.Services.AddScoped<TicketCommentApiClient>();
 builder.Services.AddScoped<DashboardApiClient>();
 builder.Services.AddScoped<TicketAttachmentApiClient>();
-builder.Services.AddScoped<TicketsRealtimeClient>();
+builder.Services.AddScoped<ITicketsRealtimeClient, TicketsRealtimeClient>();
 
 await builder.Build().RunAsync();

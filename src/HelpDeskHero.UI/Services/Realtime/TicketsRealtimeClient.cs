@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace HelpDeskHero.UI.Services.Realtime;
 
-public sealed class TicketsRealtimeClient : IAsyncDisposable
+public sealed class TicketsRealtimeClient : ITicketsRealtimeClient
 {
     private readonly NavigationManager _navigationManager;
     private HubConnection? _connection;
