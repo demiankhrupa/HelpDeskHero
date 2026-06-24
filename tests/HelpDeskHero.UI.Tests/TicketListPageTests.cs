@@ -79,9 +79,11 @@ public sealed class TicketListPageTests : BunitContext
         public Task<HttpResponseMessage> RestoreAsync(int id, CancellationToken ct = default)
             => Task.FromResult(new HttpResponseMessage());
     }
-    private sealed class FakeRealtimeClient : ITicketsRealtimeClient
-{
-    public event Func<TicketLiveUpdateDto, Task>? OnTicketChanged;
+        private sealed class FakeRealtimeClient : ITicketsRealtimeClient
+        {
+        #pragma warning disable CS0067
+        public event Func<TicketLiveUpdateDto, Task>? OnTicketChanged;
+        #pragma warning restore CS0067
 
     public Task StartAsync(
         string accessToken,
